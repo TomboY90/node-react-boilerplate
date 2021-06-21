@@ -22,6 +22,7 @@ app.get('/', (req, res) => {
 
 app.post('/user', (req, res) => {
   const user = new User(req.body);
+
   user.save((err, doc) => {
     if (err) return res.json({ success: false, err });
 
@@ -31,8 +32,9 @@ app.post('/user', (req, res) => {
   });
 })
 
-
-
+app.post('/login', (req, res) => {
+  
+})
 
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
