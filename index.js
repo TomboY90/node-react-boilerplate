@@ -8,6 +8,7 @@ const config = require('./config/key');
 
 // Models
 const { User } = require('./models/User');
+const { auth } = require('./middleware/auth');
 
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
@@ -22,7 +23,7 @@ app.get('/', (req, res) => {
   res.send('Nodemon!')
 })
 
-app.post('/user', (req, res) => {
+app.post('/api/user/register', (req, res) => {
   const user = new User(req.body);
 
   user.save((err, doc) => {
@@ -34,7 +35,7 @@ app.post('/user', (req, res) => {
   });
 })
 
-app.post('/login', (req, res) => {
+app.post('/api/user/signin', (req, res) => {
   // 요청한 이메일을 DB에서 찾는다
   User.findOne({ email: req.body.email }, (err, user) => {
     // Not Exist User
@@ -67,6 +68,29 @@ app.post('/login', (req, res) => {
             userId: user._id
           })
       })
+    })
+  })
+})
+
+app.post('/api/user/auth', auth, (req, res) => {
+  // 에러가 안나오고 이 콜백으로 온 것은 auth middleware 통과했다는 것
+  res.status(200).json({
+    _id: req.user._id,
+    isAuth: true,
+    isAdmin: req.user.role === 0 ? false : true,
+    email: req.user.email,
+    name: req.user.name,
+    lastname: req.user.lastname,
+    role: req.user.role,
+    image: req.user.image
+  })
+})
+
+app.get('/api/user/signout', auth, (req, res) => {
+  User.findOneAndUpdate({ _id: req.user._id }, { token: "" }, (err, user) => {
+    if (err) return res.json({ success: false, err });
+    return res.status(200).send({
+      success: true
     })
   })
 })
